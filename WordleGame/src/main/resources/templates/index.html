@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Wordle</title>
+<style type="text/css">
+.index {
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+</style>
+</head>
+<body>
+	<div class="index">
+		<h1>Добре Дошли в Wordle 2023</h1>
+		<form method="post" th:action="@{/games}">
+			<button>Започни Нова Игра</button>
+		</form>
+	</div>
+</body>
+</html>

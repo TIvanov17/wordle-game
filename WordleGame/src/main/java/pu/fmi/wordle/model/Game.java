@@ -7,9 +7,15 @@ public class Game {
   String id;
   String word;
   LocalDateTime startedOn;
+  String alphabet = "абвгдежзийклмнопрстуфхцчшщъьюя";
+  String alphabetMatches;
 
   int maxGuesses = 6;
   List<Guess> guesses;
+
+  int guessesMade;
+  boolean isGameWin;
+  boolean isGameLost;
 
   public String getId() {
     return id;
@@ -49,5 +55,45 @@ public class Game {
 
   public void setGuesses(List<Guess> guesses) {
     this.guesses = guesses;
+  }
+
+  public String getAlphabet() {
+    return alphabet;
+  }
+
+  public void setAlphabet(String alphabet) {
+    this.alphabet = alphabet;
+  }
+
+  public String getAlphabetMatches() {
+    return alphabetMatches;
+  }
+
+  public void setAlphabetMatches(String alphabetMatches) {
+    this.alphabetMatches = alphabetMatches;
+  }
+
+  public int getGuessesMade() {
+    return guessesMade;
+  }
+
+  public void setGuessesMade(int guessesMade) {
+    this.guessesMade = guessesMade;
+  }
+
+  public boolean isGameWin() {
+    return isGameWin;
+  }
+
+  public void setGameWin(boolean gameWin) {
+    isGameWin = gameWin;
+  }
+
+  public boolean isGameLost() {
+    return isGameLost;
+  }
+
+  public void setGameLost(boolean gameLost) {
+    isGameLost = gameLost;
   }
 }

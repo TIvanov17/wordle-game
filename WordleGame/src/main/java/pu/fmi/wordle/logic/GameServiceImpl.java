@@ -2,6 +2,7 @@ package pu.fmi.wordle.logic;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import pu.fmi.wordle.model.Game;
@@ -28,6 +29,9 @@ public class GameServiceImpl implements GameService {
     game.setStartedOn(LocalDateTime.now());
     game.setWord(wordRepo.getRandom());
     game.setGuesses(new ArrayList<>(game.getMaxGuesses()));
+    updateAlphabetMatches(game);
+    gameRepo.save(game);
+    System.out.println(game.getWord());
     return game;
   }
 
@@ -40,21 +44,17 @@ public class GameServiceImpl implements GameService {
 
   @Override
   public Game makeGuess(String id, String word) {
-
+    Game game = this.getGame(id);
     this.ensureWordExist(word);
-
-    Game game = this.ensureGameExist(id);
 
     Guess guess = new Guess();
     guess.setWord(word);
     guess.setMadeAt(LocalDateTime.now());
-
-    String guessWord = guess.getWord();
-    String gameWord = game.getWord();
-
-    String matchesWord = this.checkGuessAndGameWordsProcess(guessWord, gameWord);
-    guess.setMatches(matchesWord);
+    guess.setMatches(this.getMatchWordProcess(guess.getWord(), game.getWord()));
+    game.setGuessesMade(game.getGuessesMade() + 1);
     game.getGuesses().add(guess);
+    this.checkIsGameEnd(game, word);
+    updateAlphabetMatches(game);
     return game;
   }
 
@@ -64,44 +64,61 @@ public class GameServiceImpl implements GameService {
     }
   }
 
-  private Game ensureGameExist(String id){
-    Game game = gameRepo.get(id);
-    if(game == null){
-      throw new GameNotFoundException(id);
+  private void checkIsGameEnd(Game game, String word){
+
+    boolean areWordsEquals = game.getWord().equals(word);
+
+    if(areWordsEquals && game.getMaxGuesses() >= game.getGuessesMade()){
+      game.setGameWin(true);
+      return;
     }
-    return game;
+    if(!areWordsEquals && game.getMaxGuesses() == game.getGuessesMade()){
+      game.setGameLost(true);
+    }
+
   }
 
-  private String checkGuessAndGameWordsProcess(String guessWord, String gameWord){
+  private String getMatchWordProcess(String guessWord, String gameWord){
 
     StringBuilder builder = new StringBuilder();
-
     for(int i = 0; i < guessWord.length(); i++){
-
       char currentGuessLetter = guessWord.charAt(i);
+      char matchSymbol = Guess.NO_MATCH;
 
       for(int k = 0; k < gameWord.length(); k++){
-
         char currentGameLetter = gameWord.charAt(k);
-
-        boolean areLettersEqual = currentGuessLetter == currentGameLetter;
-        boolean areLettersEqualAndPositionEqual = areLettersEqual && i == k;
-        boolean areLettersEqualAndPositionDifferent = areLettersEqual && i != k;
-
-        if(areLettersEqualAndPositionEqual){
-          builder.append(Guess.PLACE_MATCH);
+        if(currentGuessLetter == currentGameLetter){
+          matchSymbol = i == k ? Guess.PLACE_MATCH : Guess.LETTER_MATCH;
           break;
         }
-        if(areLettersEqualAndPositionDifferent){
-          builder.append(Guess.LETTER_MATCH);
-          break;
-        }
-        if(k == gameWord.length() - 1){
-          builder.append(Guess.NO_MATCH);
+      }
+      builder.append(matchSymbol);
+    }
+
+    return builder.toString();
+  }
+
+  private void updateAlphabetMatches(Game game) {
+    StringBuilder result = new StringBuilder();
+    game.getAlphabet()
+            .chars()
+            .map(letter -> getLetterMatch(game.getGuesses(), (char) letter))
+            .forEach(letter -> result.append((char) letter));
+    game.setAlphabetMatches(result.toString());
+  }
+
+  private char getLetterMatch(List<Guess> guesses, char letter) {
+    char match = 'U'; // Not used yet
+    for (var guess : guesses) {
+      var word = guess.getWord();
+      var matches = guess.getMatches();
+      for (int i = 0; i < word.length(); i++) {
+        if (word.charAt(i) == letter && match != Guess.PLACE_MATCH) {
+          match = matches.charAt(i);
         }
       }
     }
 
-    return builder.toString();
+    return match;
   }
 }

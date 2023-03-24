@@ -1,21 +1,38 @@
 package pu.fmi.wordle.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
 public class Game {
+
+  public enum GameState {
+    ONGOING, WIN, LOSS
+  }
+
+  @Id
+  @Column(name = "game_id")
   String id;
+
   String word;
   LocalDateTime startedOn;
+
+  @Transient
   String alphabet = "абвгдежзийклмнопрстуфхцчшщъьюя";
+
+  @Column(name = "matches")
   String alphabetMatches;
 
   int maxGuesses = 6;
+
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "game_id")
   List<Guess> guesses;
 
-  int guessesMade;
-  boolean isGameWin;
-  boolean isGameLost;
+  @Enumerated(EnumType.STRING)
+  GameState state = GameState.ONGOING;
 
   public String getId() {
     return id;
@@ -73,27 +90,12 @@ public class Game {
     this.alphabetMatches = alphabetMatches;
   }
 
-  public int getGuessesMade() {
-    return guessesMade;
+
+  public GameState getState() {
+    return state;
   }
 
-  public void setGuessesMade(int guessesMade) {
-    this.guessesMade = guessesMade;
-  }
-
-  public boolean isGameWin() {
-    return isGameWin;
-  }
-
-  public void setGameWin(boolean gameWin) {
-    isGameWin = gameWin;
-  }
-
-  public boolean isGameLost() {
-    return isGameLost;
-  }
-
-  public void setGameLost(boolean gameLost) {
-    isGameLost = gameLost;
+  public void setState(GameState state) {
+    this.state = state;
   }
 }

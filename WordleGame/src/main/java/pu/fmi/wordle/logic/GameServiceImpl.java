@@ -2,22 +2,24 @@ package pu.fmi.wordle.logic;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
-import pu.fmi.wordle.model.Game;
-import pu.fmi.wordle.model.GameRepo;
-import pu.fmi.wordle.model.Guess;
-import pu.fmi.wordle.model.WordRepo;
 
-@Component
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import pu.fmi.wordle.model.*;
+
+@Service
+@Transactional
 public class GameServiceImpl implements GameService {
 
-  final GameRepo gameRepo;
+  final GameRepository gameRepo;
 
   final WordRepo wordRepo;
 
-  public GameServiceImpl(GameRepo gameRepo, WordRepo wordRepo) {
+  public GameServiceImpl(GameRepository gameRepo, WordRepo wordRepo) {
     this.gameRepo = gameRepo;
     this.wordRepo = wordRepo;
   }
@@ -37,7 +39,7 @@ public class GameServiceImpl implements GameService {
 
   @Override
   public Game getGame(String id) {
-    var game = gameRepo.get(id);
+    var game = gameRepo.getReferenceById(id);
     if (game == null) throw new GameNotFoundException(id);
     return game;
   }
@@ -45,17 +47,31 @@ public class GameServiceImpl implements GameService {
   @Override
   public Game makeGuess(String id, String word) {
     Game game = this.getGame(id);
+    if (game.getState() != Game.GameState.ONGOING) {
+      throw new GameOverException();
+    }
     this.ensureWordExist(word);
 
     Guess guess = new Guess();
     guess.setWord(word);
     guess.setMadeAt(LocalDateTime.now());
     guess.setMatches(this.getMatchWordProcess(guess.getWord(), game.getWord()));
-    game.setGuessesMade(game.getGuessesMade() + 1);
-    game.getGuesses().add(guess);
+     game.getGuesses().add(guess);
     this.checkIsGameEnd(game, word);
     updateAlphabetMatches(game);
     return game;
+  }
+
+
+  @Override
+  public Collection<Game> listLast10() {
+
+    // find all ONGOING games started before 24 hours and update the status to LOSS
+    this.gameRepo.findByStateAndStartedOnBefore(Game.GameState.ONGOING, LocalDateTime.now().minusHours(24))
+            .forEach(g -> g.setState(Game.GameState.LOSS));
+
+    // find the last 10 finished (not ONGOING) games ordered by startedOn descending
+    return this.gameRepo.findTop10ByStateNotOrderByStartedOnDesc(Game.GameState.ONGOING);
   }
 
   private void ensureWordExist(String word){
@@ -68,12 +84,12 @@ public class GameServiceImpl implements GameService {
 
     boolean areWordsEquals = game.getWord().equals(word);
 
-    if(areWordsEquals && game.getMaxGuesses() >= game.getGuessesMade()){
-      game.setGameWin(true);
+    if(areWordsEquals && game.getMaxGuesses() >= game.getGuesses().size()){
+      game.setState(Game.GameState.WIN);
       return;
     }
-    if(!areWordsEquals && game.getMaxGuesses() == game.getGuessesMade()){
-      game.setGameLost(true);
+    if(!areWordsEquals && game.getMaxGuesses() == game.getGuesses().size()){
+      game.setState(Game.GameState.LOSS);
     }
 
   }

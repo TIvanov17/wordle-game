@@ -1,0 +1,60 @@
+.Wordle {
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.Wordle-Message {
+	text-align: center;
+}
+
+.Wordle-Message > a {
+	display: block;
+	font-size: 1.2rem;
+}
+
+.Wordle-Match {
+	color: white;
+	text-align: center;
+	text-transform: uppercase;
+	padding: 0.2rem 0;
+	width: 2.4rem;
+	display: inline-block;
+	margin: 0.1rem;
+	font-size: 2rem;
+	border: 1px solid #787c7e
+}
+
+.Wordle-Match_U {
+	color: #787c7e;
+}
+
+.Wordle-Match_N {
+	background-color: #787c7e;
+}
+
+.Wordle-Match_P {
+	background-color: #6aaa64;
+	border-color: #6aaa64;
+}
+
+.Wordle-Match_L {
+	background-color: #c9b458;
+	border-color: #c9b458;
+}
+
+.Wordle-LettersStat {
+	display: flex;
+	width: 29rem;
+	flex-wrap: wrap;
+}
+
+.Wordle form input {
+	width: 13rem;
+}
+
+.Wordle-Error {
+  color: red;
+}

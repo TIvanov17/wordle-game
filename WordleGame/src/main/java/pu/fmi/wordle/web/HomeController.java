@@ -15,10 +15,9 @@ public class HomeController {
     this.gameService = gameService;
   }
 
-  @GetMapping("/")
+  @GetMapping({"/", "/games/{gameId}"})
   public String welcome(Model model) {
-    var last10 = gameService.listLast10();
-    model.addAttribute("last10", last10);
-    return "index";
+    return "/index.html";
   }
+
 }

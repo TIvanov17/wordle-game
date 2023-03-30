@@ -39,9 +39,11 @@ public class GameServiceImpl implements GameService {
 
   @Override
   public Game getGame(String id) {
-    var game = gameRepo.getReferenceById(id);
-    if (game == null) throw new GameNotFoundException(id);
-    return game;
+    var optionalOfGame = gameRepo.findById(id);
+    if (optionalOfGame.isEmpty()) {
+        throw new GameNotFoundException(id);
+    }
+    return optionalOfGame.get();
   }
 
   @Override

@@ -1,0 +1,33 @@
+.Index {
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.Index-Last10 {
+  margin-top: 1rem;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border: 1px solid lightgray;
+}
+
+.Index-Last10 > caption {
+  font-size: larger;
+  padding-bottom: 0.5rem;
+}
+
+.Index-Last10 tbody tr:nth-child(odd) {
+  background-color: lightgray;
+}
+
+.Index-Last10 tbody tr:nth-child(even) {
+  background-color: white;
+}
+
+.Index-Last10 th,
+.Index-Last10 td {
+  padding: 0.5rem;
+  border: 1px solid rgb(190,190,190);
+}
